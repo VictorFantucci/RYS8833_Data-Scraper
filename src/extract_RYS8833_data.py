@@ -65,3 +65,16 @@ def get_NMEA_type_attributes(NMEA_type: str) -> list[str]:
     """
     NMEA_type_attributes = getattr(src.utils, NMEA_type + "_header")
     return NMEA_type_attributes()
+
+def NMEA_comma_splitter(sentence: str) -> str:
+    """
+    Split a NMEA sentence string by commas, but ignore exceptions characters listed in
+    exceptions_string.
+
+    Args:
+        sentence (str): NMEA sentence string to be splited by comma.
+
+    Returns:
+        str: NMEA sentence string split by comma with exceptions ignored.
+    """
+    return re.split(r',(?![KMNT])', sentence)
