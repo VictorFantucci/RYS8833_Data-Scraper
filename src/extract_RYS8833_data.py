@@ -166,3 +166,18 @@ def NMEA_sentence_to_dataframe(NMEA_type: str,
                 continue
 
         return df
+
+def save_xls(df_list, sheet_list, xls_path) -> None:
+    """
+    Create an excel file with dataframes specifics to each NMEA sentence type.
+
+    Args:
+        df_list (list): The list that has the order each NMEA type was iterated by the
+        NMEA_sentence_to_xls() function.
+
+        filename (str): The path and name of the excel file.
+    """
+    with pd.ExcelWriter(xls_path) as writer:
+        for df, sheet in zip(df_list, sheet_list):
+
+            df.to_excel(writer, sheet_name=sheet, startrow=0 , startcol=0)
