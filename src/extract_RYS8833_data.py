@@ -51,3 +51,17 @@ def NMEA_sentence_filter(NMEA_type: str ,sentences_list: list, filter_list: list
             filter_list.append(sentences_list[i])
 
     return filter_list
+
+def get_NMEA_type_attributes(NMEA_type: str) -> list[str]:
+    """
+    Get the attributes of a specific NMEA sentence type as list to be used as headers for this
+    NMEA type dataframe object.
+
+    Args:
+        NMEA_type (str): NMEA sentence type whose attributes are gone be fetched.
+
+    Returns:
+        list[str]: List containing all attributes of a specific NMEA sentence type.
+    """
+    NMEA_type_attributes = getattr(src.utils, NMEA_type + "_header")
+    return NMEA_type_attributes()
