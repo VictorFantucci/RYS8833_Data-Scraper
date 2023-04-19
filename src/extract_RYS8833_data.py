@@ -111,3 +111,58 @@ def manipulate_UTC_of_Position(df_NMEA_type: pd.DataFrame, GMT: int) -> pd.DataF
 
     else:
         return df_NMEA_type
+
+def NMEA_sentence_to_dataframe(NMEA_type: str,
+                               NMEA_type_list: list[str],
+                               sheet_name_list: list[str],
+                               GMT: int) -> pd.DataFrame:
+    """
+    Transforms the list of a specified NMEA sentence type into a pandas DataFrame object.
+
+    Args:
+        NMEA_type (str): NMEA sentence type whose attributes are gone be fetched.
+
+        NMEA_type_list (list[str]): List of all NMEA sentence types.
+
+        sheet_name_list (list[str]): List of the names of the corresponding excel sheets
+        (For each NMEA sentence type the excel sheet should have its name.)
+
+        GMT (int): Greenwich Mean Time (GMT) as an signed integer.
+
+    Returns:
+        pd.DataFrame: Pandas DataFrame object of a specific NMEA sentence type.
+    """
+
+    # Only generates a dataframe for actual data.
+    if len(NMEA_type_list) != 0:
+        sheet_name_list.append(NMEA_type)
+
+        # Empty list to store each line of the specific NMEA sentence type as one item
+        list_to_frame = []
+
+        # NMEA sentence type attributes to be used as headers for the dataframe of
+        # this specific type.
+        header_columns = get_NMEA_type_attributes(NMEA_type)
+
+        for i in range(len(NMEA_type_list)):
+            item = NMEA_type_list[i]
+            list_to_frame.append(NMEA_comma_splitter(item))
+
+        df =  pd.DataFrame(list_to_frame, columns=header_columns)
+
+        df = get_Satellite_System_ID(df)
+
+        manipulate_UTC_of_Position(df, GMT)
+        manipulate_measurement_variables(df)
+
+        columns_to_drop = ["Geodial_Separation_[m]",
+                            "Age_Of_DGPS_Data",
+                            "Checksum",
+                            "Course_Over_Ground_Magnetic"]
+        for col in columns_to_drop:
+            if col in df.columns:
+                df.drop(col, axis = 1, inplace = True)
+            else:
+                continue
+
+        return df
