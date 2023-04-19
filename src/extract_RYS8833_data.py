@@ -78,3 +78,36 @@ def NMEA_comma_splitter(sentence: str) -> str:
         str: NMEA sentence string split by comma with exceptions ignored.
     """
     return re.split(r',(?![KMNT])', sentence)
+
+def manipulate_UTC_of_Position(df_NMEA_type: pd.DataFrame, GMT: int) -> pd.DataFrame:
+    """
+    Transform the UTC of the position information into the HH:MM:SS format for both UTC
+    and local time.
+
+    Args:
+        df_NMEA_type (pd.DataFrame): Pandas DataFrame object of a specific NMEA sentence type.
+
+        GMT (int): Greenwich Mean Time (GMT) as an signed integer.
+
+    Returns:
+        pd.DataFrame: Pandas DataFrame object of a specific NMEA sentence type.
+    """
+    if "UTC_of_Position" in df_NMEA_type.columns:
+        UTC_of_Position_list = df_NMEA_type["UTC_of_Position"].astype(str).to_list()
+
+        UTC_of_Position_list = \
+            [x.split(".")[0] for x in UTC_of_Position_list]
+        UTC_of_Position_list = \
+            [x[0:2] + ":" + x[2:4] + ":" + x[4:6] for x in UTC_of_Position_list]
+        UTC_of_Position_list = \
+            [datetime.datetime.strptime(x, "%H:%M:%S").time() for x in UTC_of_Position_list]
+        GMT_of_Position_list = \
+            [x.replace(hour=x.hour + GMT) for x in UTC_of_Position_list]
+
+        df_NMEA_type["UTC"] = UTC_of_Position_list
+        df_NMEA_type["GMT"] = GMT_of_Position_list
+
+        return df_NMEA_type
+
+    else:
+        return df_NMEA_type
