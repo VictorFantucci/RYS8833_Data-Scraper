@@ -181,3 +181,54 @@ def save_xls(df_list, sheet_list, xls_path) -> None:
         for df, sheet in zip(df_list, sheet_list):
 
             df.to_excel(writer, sheet_name=sheet, startrow=0 , startcol=0)
+
+def NMEA_sentences_to_xls(GMT_timezone: int, data_list: list, file_name: str) -> None:
+    """
+    Get the list containing all the NMEA sentences stored as single lists and create an excel file
+    with dataframes specifics to each NMEA type.
+
+    Args:
+        GMT_timezone (int): Greenwich Mean Time (GMT) as an signed integer.
+
+        data_list (list): The list that has as the NMEA sentences stored as single lists.
+
+        filename (str): The name of the excel file.
+    """
+    #  # Create a logger object for this function.
+    log4me = src.log4me.function_logger(script_name=script_name, console_level=logging.INFO)
+
+    # Get list of the NMEA sentences types.
+    NMEA_sentences = src.utils.get_NMEA_sentences()
+
+    # Initialize an empty list to store the dataframes of each type of NMEA sentence.
+    df_list = []
+
+    # Initialize an empty list to store the names of each excel sheet in the output file.
+    sheet_list = []
+    try:
+        for NMEA_type in NMEA_sentences:
+
+            # Initialize an empty list to store then data from the specific NMEA sentence type.
+            NMEA_type_list = []
+
+            NMEA_type_list = NMEA_sentence_filter(NMEA_type=NMEA_type,
+                                            sentences_list=data_list,
+                                            filter_list=NMEA_type_list)
+
+            # Check if the NMEA sentence type is not empty, if it is skip to the next iteration.
+            if len(NMEA_type_list) != 0:
+                df = NMEA_sentence_to_dataframe(NMEA_type=NMEA_type,
+                                                NMEA_type_list=NMEA_type_list,
+                                                sheet_name_list=sheet_list,
+                                                GMT=GMT_timezone)
+                df_list.append(df)
+                log4me.info("The DataFrame for the NMEA type {} was created successfully."
+                                   .format(NMEA_type))
+            else:
+                continue
+
+        save_xls(df_list, sheet_list, file_name)
+    except Exception as error:
+        log4me.error("An error occurred while creating the DataFrame for the NMEA type {}."
+                                     .format(NMEA_type))
+        traceback.print_exc()
