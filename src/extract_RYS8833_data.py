@@ -79,6 +79,18 @@ def NMEA_comma_splitter(sentence: str) -> str:
     """
     return re.split(r',(?![KMNT])', sentence)
 
+def get_Satellite_System_ID(df_NMEA_type: pd.DataFrame) -> pd.DataFrame:
+    """_summary_
+
+    Args:
+        df_NMEA_type (pd.DataFrames): Pandas DataFrame object of a specific NMEA sentence type.
+
+    Returns:
+        pd.DataFrame: Pandas DataFrame object of a specific NMEA sentence type.
+    """
+    df_NMEA_type["Satellite_System_ID"] = df_NMEA_type["Sentence_ID"].str[1:3]
+    return df_NMEA_type
+
 def manipulate_UTC_of_Position(df_NMEA_type: pd.DataFrame, GMT: int) -> pd.DataFrame:
     """
     Transform the UTC of the position information into the HH:MM:SS format for both UTC
@@ -153,6 +165,7 @@ def NMEA_sentence_to_dataframe(NMEA_type: str,
         df = get_Satellite_System_ID(df)
 
         manipulate_UTC_of_Position(df, GMT)
+        import ipdb; ipdb.set_trace()
         manipulate_measurement_variables(df)
 
         columns_to_drop = ["Geodial_Separation_[m]",
