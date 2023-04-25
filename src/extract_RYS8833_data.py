@@ -80,7 +80,9 @@ def NMEA_comma_splitter(sentence: str) -> str:
     return re.split(r',(?![KMNT])', sentence)
 
 def get_Satellite_System_ID(df_NMEA_type: pd.DataFrame) -> pd.DataFrame:
-    """_summary_
+    """
+    Get the satellite system ID from the System ID column to easily identify the
+    satellite constellations.
 
     Args:
         df_NMEA_type (pd.DataFrames): Pandas DataFrame object of a specific NMEA sentence type.
@@ -124,6 +126,26 @@ def manipulate_UTC_of_Position(df_NMEA_type: pd.DataFrame, GMT: int) -> pd.DataF
     else:
         return df_NMEA_type
 
+def manipulate_measurement_variables(df_NMEA_type: pd.DataFrame) -> pd.DataFrame:
+    """
+    Transform the measurements variables, such as Altitude [m], to an easy to read format.
+
+    Args:
+        df_NMEA_type (pd.DataFrame): Pandas DataFrame object of a specific NMEA sentence type.
+
+    Returns:
+        pd.DataFrame: Pandas DataFrame object of a specific NMEA sentence type.
+    """
+    columns_to_transform = ["Altitude_[m]",
+                            "Speed_Over_Ground_[knot]",
+                            "Speed_Over_Ground_[km/h]"]
+    for col in columns_to_transform:
+        if col in df_NMEA_type.columns:
+            df_NMEA_type[col] = df_NMEA_type[col].str.split(",").str[0]
+        else:
+            continue
+    return df_NMEA_type
+
 def NMEA_sentence_to_dataframe(NMEA_type: str,
                                NMEA_type_list: list[str],
                                sheet_name_list: list[str],
@@ -165,7 +187,7 @@ def NMEA_sentence_to_dataframe(NMEA_type: str,
         df = get_Satellite_System_ID(df)
 
         manipulate_UTC_of_Position(df, GMT)
-        import ipdb; ipdb.set_trace()
+
         manipulate_measurement_variables(df)
 
         columns_to_drop = ["Geodial_Separation_[m]",
